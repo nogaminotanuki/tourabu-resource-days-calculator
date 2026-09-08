@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="現在の資源と日課・遠征プランから、目標資源までの日数を計算する『刀剣乱舞ONLINE』非公式ファンツールです。">
+  <meta name="theme-color" content="#1d2b3b">
+  <title>刀剣乱舞ONLINE 資源貯蓄日数計算ツール</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">本文へ移動</a>
+  <div class="site-shell">
+    <header class="site-header">
+      <div class="header-mark" aria-hidden="true">資</div>
+      <div>
+        <p class="eyebrow">非公式ファンツール</p>
+        <h1>資源貯蓄日数計算ツール</h1>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="画面切り替え">
+      <button class="tab is-active" id="calcTab" type="button" role="tab" aria-selected="true" aria-controls="calcView" data-view="calcView">資源計算</button>
+      <button class="tab" id="referenceTab" type="button" role="tab" aria-selected="false" aria-controls="referenceView" data-view="referenceView">遠征報酬一覧</button>
+    </nav>
+
+    <main id="main">
+      <div id="calcView" class="view" role="tabpanel" aria-labelledby="calcTab">
+        <section class="panel resource-entry-panel">
+          <div class="section-heading compact">
+            <span class="step-number">1</span>
+            <h2>資源を入力</h2>
+          </div>
+          <div class="resource-entry-grid">
+            <div class="resource-entry-header" aria-hidden="true"><span>資源</span><span>現在</span><span>目標</span></div>
+            <div class="resource-entry-row resource-wood"><strong>木炭</strong><input id="stock0" aria-label="木炭の現在値" type="number" inputmode="numeric" min="0" max="9999999" step="1" value="0"><input id="target0" aria-label="木炭の目標値" type="number" inputmode="numeric" min="0" max="9999999" step="1" placeholder="対象外"></div>
+            <div class="resource-entry-row resource-steel"><strong>玉鋼</strong><input id="stock1" aria-label="玉鋼の現在値" type="number" inputmode="numeric" min="0" max="9999999" step="1" value="0"><input id="target1" aria-label="玉鋼の目標値" type="number" inputmode="numeric" min="0" max="9999999" step="1" placeholder="対象外"></div>
+            <div class="resource-entry-row resource-water"><strong>冷却材</strong><input id="stock2" aria-label="冷却材の現在値" type="number" inputmode="numeric" min="0" max="9999999" step="1" value="0"><input id="target2" aria-label="冷却材の目標値" type="number" inputmode="numeric" min="0" max="9999999" step="1" placeholder="対象外"></div>
+            <div class="resource-entry-row resource-stone"><strong>砥石</strong><input id="stock3" aria-label="砥石の現在値" type="number" inputmode="numeric" min="0" max="9999999" step="1" value="0"><input id="target3" aria-label="砥石の目標値" type="number" inputmode="numeric" min="0" max="9999999" step="1" placeholder="対象外"></div>
+          </div>
+          <div class="resource-entry-actions">
+            <div class="button-row">
+              <button class="button button-primary" id="target700kBtn" type="button">鍛刀天井目安 70万</button>
+              <button class="button" id="clearTargetBtn" type="button">目標をクリア</button>
+            </div>
+            <p class="preset-note">目標の空欄は計算対象外です。70万は所持上限ではありません。</p>
+          </div>
+        </section>
+
+        <section class="panel daily-panel">
+          <div class="section-heading compact">
+            <span class="step-number">2</span>
+            <h2>日課</h2>
+          </div>
+          <label class="switch-row">
+            <input id="dailyQuest" type="checkbox" checked>
+            <span class="switch" aria-hidden="true"></span>
+            <span><strong>日課をすべて達成する</strong><small>1日につき各資源 +2,800</small></span>
+          </label>
+          <p class="inline-alert" id="dailyPlanAlert" hidden>日課全達成には遠征1回以上が必要です。下の遠征プランを設定してください。</p>
+        </section>
+
+        <section class="panel">
+          <div class="plan-heading">
+            <div class="section-heading compact">
+              <span class="step-number">3</span>
+              <h2>1日の遠征プラン</h2>
+            </div>
+            <label class="team-count-field"><span>使用する部隊数</span><select id="teamCount"></select></label>
+          </div>
+          <div id="teams" class="teams"></div>
+          <div class="daily-summary" id="dailySummary" aria-label="1日の獲得資源"></div>
+          <div class="button-row plan-actions">
+            <button class="button button-danger" id="clearPlanBtn" type="button">遠征プランを消去</button>
+          </div>
+          <details class="compact-details">
+            <summary>遠征プランの注意</summary>
+            <p>遠征部隊1～5は入力枠です。近侍がいる部隊など、遠征できない部隊は含めないでください。各部隊と同じ遠征先は1日24時間までです。正確な出発時刻の重複は判定しません。</p>
+          </details>
+        </section>
+
+        <section class="panel result-panel" aria-live="polite">
+          <div class="section-heading compact">
+            <span class="step-number">4</span>
+            <h2>計算結果</h2>
+          </div>
+          <div class="result-message" id="resultMessage"></div>
+          <div class="result-overview">
+            <article class="result-card result-fast">
+              <p>最短</p>
+              <strong id="fastDays">—</strong>
+              <span>全遠征が大成功した場合</span>
+              <time id="fastDate"></time>
+            </article>
+            <article class="result-card result-slow">
+              <p>最長</p>
+              <strong id="slowDays">—</strong>
+              <span>全遠征が成功した場合</span>
+              <time id="slowDate"></time>
+            </article>
+            <article class="result-range">
+              <span>予想到達</span>
+              <strong id="rangeDays">—</strong>
+            </article>
+          </div>
+          <div class="bottleneck-grid">
+            <div id="greatBottleneckWrap"><span id="greatBottleneckLabel">最後に貯まる資源</span><strong id="greatBottleneck">—</strong></div>
+            <div id="successBottleneckWrap"><span>成功時</span><strong id="successBottleneck">—</strong></div>
+          </div>
+
+          <details class="result-details">
+            <summary>資源別の内訳</summary>
+            <div class="desktop-result-table">
+              <div class="table-scroll">
+                <table>
+                  <thead><tr><th>資源</th><th>目標</th><th>現在</th><th>あと必要</th><th>1日／成功</th><th>1日／大成功</th><th>日数／成功</th><th>日数／大成功</th></tr></thead>
+                  <tbody id="resultBody"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="mobile-result-cards" id="mobileResultCards"></div>
+          </details>
+
+          <div class="arrival-grid">
+            <section class="arrival-card">
+              <h3>全て大成功した場合</h3>
+              <p id="greatArrivalLabel">—</p>
+              <div id="greatFinalResources" class="final-resource-list"></div>
+            </section>
+            <section class="arrival-card">
+              <h3>全て成功した場合</h3>
+              <p id="successArrivalLabel">—</p>
+              <div id="successFinalResources" class="final-resource-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <details class="notice-panel">
+          <summary>計算条件・注意事項</summary>
+          <div>
+            <p>入力した日課と遠征を毎日続けた場合の目安です。自然回復、月課・イベント報酬、合戦場での増減、手入・刀装作成などの消費、疲労は考慮しません。</p>
+            <p>各遠征の必要Lv・編成条件を満たし、成功以上になる前提です。特殊な報酬倍率と遠征呼び戻し鳩も対象外です。</p>
+          </div>
+        </details>
+
+        <div class="reset-row">
+          <button class="button button-danger" id="resetBtn" type="button">すべてリセット</button>
+        </div>
+      </div>
+
+      <div id="referenceView" class="view" role="tabpanel" aria-labelledby="referenceTab" hidden>
+        <section class="panel">
+          <div class="reference-heading">
+            <div>
+              <h2>遠征報酬一覧</h2>
+              <p>現行の全20遠征について、成功・大成功時の資源と道具報酬を確認できます。</p>
+            </div>
+            <label class="search-field"><span>遠征名・IDで検索</span><input id="referenceSearch" type="search" placeholder="例：西上作戦 / D2"></label>
+          </div>
+          <div class="filters" id="referenceFilters" aria-label="報酬で絞り込み">
+            <button class="filter is-active" type="button" data-filter="all">全遠征</button>
+            <button class="filter" type="button" data-filter="wood">木炭</button>
+            <button class="filter" type="button" data-filter="steel">玉鋼</button>
+            <button class="filter" type="button" data-filter="water">冷却材</button>
+            <button class="filter" type="button" data-filter="stone">砥石</button>
+            <button class="filter" type="button" data-filter="koban">小判</button>
+            <button class="filter" type="button" data-filter="request">依頼札</button>
+            <button class="filter" type="button" data-filter="help">手伝い札</button>
+          </div>
+          <p class="reference-count" id="referenceCount"></p>
+          <div class="table-scroll reference-table-wrap">
+            <table class="reference-table">
+              <thead><tr><th>ID</th><th>遠征名</th><th>時間</th><th>木炭<br><small>成功／大成功</small></th><th>玉鋼<br><small>成功／大成功</small></th><th>冷却材<br><small>成功／大成功</small></th><th>砥石<br><small>成功／大成功</small></th><th>小判</th><th>依頼札</th><th>手伝い札</th></tr></thead>
+              <tbody id="referenceBody"></tbody>
+            </table>
+          </div>
+          <div class="reference-notes">
+            <p><strong>大成功時の資源</strong> 表内の実数値を登録しています。</p>
+            <p><strong>小判・依頼札・手伝い札</strong> 道具報酬は大成功時のみ獲得できます。</p>
+          </div>
+          <p class="fine-print">季節の収穫物は掲載していません。小判は現在の直接獲得量で表示しています。</p>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <p><strong>データ確認日：2026-09-08</strong></p>
+      <p>公式情報：<a href="https://www.toukenranbu.jp/game-topics/2763/" target="_blank" rel="noreferrer">資源所持上限の変更</a>、<a href="https://www.toukenranbu.jp/game-topics/2603/" target="_blank" rel="noreferrer">日課任務の改修</a></p>
+      <p>本ツールはゲーム内仕様に基づく非公式資料です。最新情報は公式サイトおよびゲーム内「指南」をご確認ください。</p>
+      <p>本ツールは非公式ファンツールです。『刀剣乱舞ONLINE』公式運営および関係各社とは関係ありません。</p>
+    </footer>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="/script.js"></script>
+</body>
+</html>
