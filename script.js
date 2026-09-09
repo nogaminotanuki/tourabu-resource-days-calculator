@@ -3,6 +3,13 @@ import { DAILY_REWARD, EXPEDITIONS, MAX_RESOURCE, RESOURCE_NAMES, calculateProje
 const STORAGE_KEY = "tourabuResourceDaysV1";
 const LEGACY_KEY = "tourabuResourceDaysPrototypeV3";
 const expeditionById = new Map(EXPEDITIONS.map((item) => [item.id, item]));
+const EXPEDITION_GROUPS = [
+  { key: "A", label: "A1〜A4", className: "expedition-a" },
+  { key: "B", label: "B1〜B4", className: "expedition-b" },
+  { key: "C", label: "C1〜C4", className: "expedition-c" },
+  { key: "D", label: "D1〜D4", className: "expedition-d" },
+  { key: "E", label: "E1〜E4", className: "expedition-e" },
+];
 const formatNumber = new Intl.NumberFormat("ja-JP");
 const $ = (selector) => document.querySelector(selector);
 const emptyTeams = () => Array.from({ length: 5 }, () => ({}));
@@ -116,7 +123,21 @@ function renderTeamCount() {
 }
 
 function expeditionOptions() {
-  return ['<option value="">遠征先を選択</option>', ...EXPEDITIONS.map((item) => `<option value="${item.id}">${item.id} ${item.name}（${formatDuration(item.minutes)}）</option>`)].join("");
+  const groups = EXPEDITION_GROUPS.map((group) => {
+    const options = EXPEDITIONS.filter((item) => item.id.startsWith(group.key))
+      .map((item) => `<option class="${group.className}" value="${item.id}">${item.id} ${item.name}（${formatDuration(item.minutes)}）</option>`)
+      .join("");
+    return `<optgroup class="${group.className}" label="${group.label}">${options}</optgroup>`;
+  });
+  return ['<option value="">遠征先を選択</option>', ...groups].join("");
+}
+
+function expeditionClass(id) {
+  return `expedition-${id.charAt(0).toLowerCase()}`;
+}
+
+function expeditionId(id) {
+  return `<span class="expedition-id ${expeditionClass(id)}">${id}</span>`;
 }
 
 function renderTeams() {
@@ -132,8 +153,8 @@ function renderTeams() {
     entries.forEach(([id, count]) => {
       const expedition = expeditionById.get(id);
       const row = document.createElement("div");
-      row.className = "plan-row";
-      row.innerHTML = `<div class="plan-copy"><div class="plan-name"><span>${id} ${expedition.name}</span><small class="selected-badge">設定中</small></div><div class="plan-meta">${formatDuration(expedition.minutes)} × ${count}回</div></div><div class="stepper"><button type="button" data-minus="${teamIndex}:${id}" aria-label="${expedition.name}を1回減らす">−</button><strong>${count}</strong><button type="button" data-plus="${teamIndex}:${id}" aria-label="${expedition.name}を1回増やす" ${canAdd(teamIndex, id) ? "" : "disabled"}>＋</button></div>`;
+      row.className = `plan-row ${expeditionClass(id)}`;
+      row.innerHTML = `<div class="plan-copy"><div class="plan-name">${expeditionId(id)}<span>${expedition.name}</span><small class="selected-badge">設定中</small></div><div class="plan-meta">${formatDuration(expedition.minutes)} × ${count}回</div></div><div class="stepper"><button type="button" data-minus="${teamIndex}:${id}" aria-label="${expedition.name}を1回減らす">−</button><strong>${count}</strong><button type="button" data-plus="${teamIndex}:${id}" aria-label="${expedition.name}を1回増やす" ${canAdd(teamIndex, id) ? "" : "disabled"}>＋</button></div>`;
       runs.append(row);
     });
     root.append(card);
@@ -236,7 +257,7 @@ function renderReference() {
   $("#referenceCount").textContent = `${rows.length}件`;
   $("#referenceBody").innerHTML = rows.map((item) => {
     const resources = item.success.map((value, index) => `<td>${formatNumber.format(value)} / ${formatNumber.format(item.great[index])}</td>`).join("");
-    return `<tr><td>${item.id}</td><th scope="row">${item.name}</th><td>${formatDuration(item.minutes)}</td>${resources}<td>${item.koban || "—"}</td><td>${item.request || "—"}</td><td>${item.help || "—"}</td></tr>`;
+    return `<tr><td>${expeditionId(item.id)}</td><th scope="row">${item.name}</th><td>${formatDuration(item.minutes)}</td>${resources}<td>${item.koban || "—"}</td><td>${item.request || "—"}</td><td>${item.help || "—"}</td></tr>`;
   }).join("");
 }
 
