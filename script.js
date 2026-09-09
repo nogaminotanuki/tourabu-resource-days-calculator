@@ -147,14 +147,15 @@ function renderTeams() {
     const card = document.createElement("section");
     const used = usedTeamMinutes(teamIndex);
     card.className = "team";
-    card.innerHTML = `<div class="team-head"><strong class="team-title">遠征部隊${teamIndex + 1}</strong><div class="team-time">${formatDuration(used)} / 24時間<div class="time-bar"><span style="width:${used / 14.4}%"></span></div></div></div><div class="add-expedition"><select aria-label="遠征部隊${teamIndex + 1}の遠征先">${expeditionOptions()}</select><button class="button" type="button" data-add="${teamIndex}">追加</button></div><div class="team-runs"></div>`;
+    const hasExpeditions = Object.keys(state.teams[teamIndex]).length > 0;
+    card.innerHTML = `<div class="team-head"><strong class="team-title">遠征部隊${teamIndex + 1}</strong><div class="team-head-actions"><div class="team-time">${formatDuration(used)} / 24時間<div class="time-bar"><span style="width:${used / 14.4}%"></span></div></div><button class="team-clear" type="button" data-clear-team="${teamIndex}" aria-label="遠征部隊${teamIndex + 1}の設定をすべて削除" title="この部隊の遠征を削除" ${hasExpeditions ? "" : "disabled"}>×</button></div></div><div class="add-expedition"><select aria-label="遠征部隊${teamIndex + 1}の遠征先">${expeditionOptions()}</select><button class="button" type="button" data-add="${teamIndex}">追加</button></div><div class="team-runs"></div>`;
     const runs = card.querySelector(".team-runs");
     const entries = Object.entries(state.teams[teamIndex]);
     entries.forEach(([id, count]) => {
       const expedition = expeditionById.get(id);
       const row = document.createElement("div");
       row.className = `plan-row ${expeditionClass(id)}`;
-      row.innerHTML = `<div class="plan-copy"><div class="plan-name">${expeditionId(id)}<span>${expedition.name}</span><small class="selected-badge">設定中</small></div><div class="plan-meta">${formatDuration(expedition.minutes)} × ${count}回</div></div><div class="plan-controls"><button class="remove-row" type="button" data-remove="${teamIndex}:${id}" aria-label="${expedition.name}を削除" title="削除">×</button><div class="stepper"><button type="button" data-minus="${teamIndex}:${id}" aria-label="${expedition.name}を1回減らす">−</button><strong>${count}</strong><button type="button" data-plus="${teamIndex}:${id}" aria-label="${expedition.name}を1回増やす" ${canAdd(teamIndex, id) ? "" : "disabled"}>＋</button></div></div>`;
+      row.innerHTML = `<div class="plan-copy"><div class="plan-name">${expeditionId(id)}<span>${expedition.name}</span><small class="selected-badge">設定中</small></div><div class="plan-meta">${formatDuration(expedition.minutes)} × ${count}回</div></div><div class="stepper"><button type="button" data-minus="${teamIndex}:${id}" aria-label="${expedition.name}を1回減らす">−</button><strong>${count}</strong><button type="button" data-plus="${teamIndex}:${id}" aria-label="${expedition.name}を1回増やす" ${canAdd(teamIndex, id) ? "" : "disabled"}>＋</button></div>`;
       runs.append(row);
     });
     root.append(card);
@@ -282,18 +283,17 @@ $("#teamCount").addEventListener("change", (event) => {
 $("#teams").addEventListener("click", (event) => {
   const button = event.target.closest("button");
   if (!button) return;
+  if (button.dataset.clearTeam !== undefined) {
+    state.teams[Number(button.dataset.clearTeam)] = {};
+    refresh();
+    toast("この部隊の遠征を削除しました。");
+    return;
+  }
   if (button.dataset.add !== undefined) {
     const teamIndex = Number(button.dataset.add); const id = button.previousElementSibling.value;
     if (id && canAdd(teamIndex, id)) state.teams[teamIndex][id] = (state.teams[teamIndex][id] || 0) + 1;
     else if (id) toast("部隊または同じ遠征先の24時間上限を超えます。");
   } else {
-    if (button.dataset.remove) {
-      const [teamIndexText, id] = button.dataset.remove.split(":");
-      delete state.teams[Number(teamIndexText)][id];
-      refresh();
-      toast("遠征を削除しました。");
-      return;
-    }
     const payload = button.dataset.plus || button.dataset.minus;
     if (!payload) return;
     const [teamIndexText, id] = payload.split(":"); const teamIndex = Number(teamIndexText);
