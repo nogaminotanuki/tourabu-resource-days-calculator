@@ -299,6 +299,18 @@ a { color: var(--blue); text-underline-offset: 3px; }
 .time-bar span { display: block; height: 100%; border-radius: inherit; background: var(--teal); transition: width .2s; }
 .add-expedition { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 7px; margin: 12px 0 4px; }
 .add-expedition select { min-width: 0; padding: 8px 9px; }
+.add-expedition optgroup { color: #1d2b3b; font-weight: 800; }
+.add-expedition option { color: #1d2b3b; font-weight: 650; }
+.add-expedition optgroup.expedition-a,
+.add-expedition option.expedition-a { background: #dff4ff; }
+.add-expedition optgroup.expedition-b,
+.add-expedition option.expedition-b { background: #fff4c7; }
+.add-expedition optgroup.expedition-c,
+.add-expedition option.expedition-c { background: #e0f4e5; }
+.add-expedition optgroup.expedition-d,
+.add-expedition option.expedition-d { background: #ffead7; }
+.add-expedition optgroup.expedition-e,
+.add-expedition option.expedition-e { background: #eee5ff; }
 .plan-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -311,8 +323,30 @@ a { color: var(--blue); text-underline-offset: 3px; }
   border-radius: 11px;
   background: #f2f8f7;
 }
+.plan-row.expedition-a { border-color: #83c7e8; border-left-color: #2187b8; background: #f1faff; }
+.plan-row.expedition-b { border-color: #ddbd58; border-left-color: #a97900; background: #fffaf0; }
+.plan-row.expedition-c { border-color: #84c394; border-left-color: #2f8250; background: #f2fbf4; }
+.plan-row.expedition-d { border-color: #e5a66d; border-left-color: #b45a15; background: #fff7f0; }
+.plan-row.expedition-e { border-color: #b8a0e4; border-left-color: #7351b5; background: #faf7ff; }
 .plan-copy { min-width: 0; }
 .plan-name { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; overflow-wrap: anywhere; font-size: 1.05rem; font-weight: 800; line-height: 1.45; }
+.expedition-id {
+  display: inline-flex;
+  min-width: 2.35rem;
+  justify-content: center;
+  padding: 2px 7px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: #17232f;
+  font-weight: 850;
+  line-height: 1.45;
+  white-space: nowrap;
+}
+.expedition-id.expedition-a { border-color: #83c7e8; background: #dff4ff; color: #145f86; }
+.expedition-id.expedition-b { border-color: #ddbd58; background: #fff1b8; color: #765500; }
+.expedition-id.expedition-c { border-color: #84c394; background: #dcf2e2; color: #24663e; }
+.expedition-id.expedition-d { border-color: #e5a66d; background: #ffe5ce; color: #8b4310; }
+.expedition-id.expedition-e { border-color: #b8a0e4; background: #eadfff; color: #593a98; }
 .selected-badge { display: inline-block; padding: 2px 7px; border-radius: 99px; background: var(--teal); color: white; font-size: .75rem; font-weight: 800; line-height: 1.5; }
 .plan-meta { margin-top: 4px; color: #536674; font-size: .9rem; font-weight: 650; }
 .stepper { display: flex; align-items: center; overflow: hidden; border: 1px solid #c8d2da; border-radius: 9px; background: white; }
