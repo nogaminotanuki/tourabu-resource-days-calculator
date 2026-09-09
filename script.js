@@ -154,7 +154,7 @@ function renderTeams() {
       const expedition = expeditionById.get(id);
       const row = document.createElement("div");
       row.className = `plan-row ${expeditionClass(id)}`;
-      row.innerHTML = `<div class="plan-copy"><div class="plan-name">${expeditionId(id)}<span>${expedition.name}</span><small class="selected-badge">設定中</small></div><div class="plan-meta">${formatDuration(expedition.minutes)} × ${count}回</div></div><div class="stepper"><button type="button" data-minus="${teamIndex}:${id}" aria-label="${expedition.name}を1回減らす">−</button><strong>${count}</strong><button type="button" data-plus="${teamIndex}:${id}" aria-label="${expedition.name}を1回増やす" ${canAdd(teamIndex, id) ? "" : "disabled"}>＋</button></div>`;
+      row.innerHTML = `<div class="plan-copy"><div class="plan-name">${expeditionId(id)}<span>${expedition.name}</span><small class="selected-badge">設定中</small></div><div class="plan-meta">${formatDuration(expedition.minutes)} × ${count}回</div></div><div class="plan-controls"><button class="remove-row" type="button" data-remove="${teamIndex}:${id}" aria-label="${expedition.name}を削除" title="削除">×</button><div class="stepper"><button type="button" data-minus="${teamIndex}:${id}" aria-label="${expedition.name}を1回減らす">−</button><strong>${count}</strong><button type="button" data-plus="${teamIndex}:${id}" aria-label="${expedition.name}を1回増やす" ${canAdd(teamIndex, id) ? "" : "disabled"}>＋</button></div></div>`;
       runs.append(row);
     });
     root.append(card);
@@ -287,6 +287,13 @@ $("#teams").addEventListener("click", (event) => {
     if (id && canAdd(teamIndex, id)) state.teams[teamIndex][id] = (state.teams[teamIndex][id] || 0) + 1;
     else if (id) toast("部隊または同じ遠征先の24時間上限を超えます。");
   } else {
+    if (button.dataset.remove) {
+      const [teamIndexText, id] = button.dataset.remove.split(":");
+      delete state.teams[Number(teamIndexText)][id];
+      refresh();
+      toast("遠征を削除しました。");
+      return;
+    }
     const payload = button.dataset.plus || button.dataset.minus;
     if (!payload) return;
     const [teamIndexText, id] = payload.split(":"); const teamIndex = Number(teamIndexText);
