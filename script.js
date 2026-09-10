@@ -1,4 +1,5 @@
 import { DAILY_REWARD, EXPEDITIONS, MAX_RESOURCE, RESOURCE_NAMES, calculateProjection, formatDuration } from "/calculation-core.js";
+import { cloneTeams, createStoragePayload, expeditionClass, parseStoredPayload } from "/ui-core.js";
 
 const STORAGE_KEY = "tourabuResourceDaysV1";
 const LEGACY_KEY = "tourabuResourceDaysPrototypeV3";
@@ -16,6 +17,8 @@ const emptyTeams = () => Array.from({ length: 5 }, () => ({}));
 const stockInputs = Array.from({ length: 4 }, (_, index) => $(`#stock${index}`));
 const targetInputs = Array.from({ length: 4 }, (_, index) => $(`#target${index}`));
 const state = { dailyQuest: true, teamCount: 4, teams: emptyTeams(), filter: "all" };
+let toastTimer = null;
+let undoAction = null;
 
 function parseResource(input, nullable = false) {
   const text = input.value.trim();
@@ -57,10 +60,7 @@ function cleanTeams(value) {
 }
 
 function restore() {
-  let stored = null;
-  try {
-    stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || JSON.parse(localStorage.getItem(LEGACY_KEY) || "null");
-  } catch { stored = null; }
+  const stored = parseStoredPayload(localStorage.getItem(STORAGE_KEY), localStorage.getItem(LEGACY_KEY));
   if (!stored) return;
   const legacyInputs = stored.inputs || {};
   const stocks = stored.stock || stored.current || Array.from({ length: 4 }, (_, index) => legacyInputs[`stock${index}`]);
@@ -74,10 +74,10 @@ function restore() {
 }
 
 function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(createStoragePayload({
     stock: stockInputs.map((input) => input.value), targets: targetInputs.map((input) => input.value),
     dailyQuest: state.dailyQuest, teamCount: state.teamCount, teams: state.teams,
-  }));
+  })));
 }
 
 function activeEntries() {
@@ -132,10 +132,6 @@ function expeditionOptions() {
   return ['<option value="">遠征先を選択</option>', ...groups].join("");
 }
 
-function expeditionClass(id) {
-  return `expedition-${id.charAt(0).toLowerCase()}`;
-}
-
 function expeditionId(id) {
   return `<span class="expedition-id ${expeditionClass(id)}">${id}</span>`;
 }
@@ -155,7 +151,7 @@ function renderTeams() {
       const expedition = expeditionById.get(id);
       const row = document.createElement("div");
       row.className = `plan-row ${expeditionClass(id)}`;
-      row.innerHTML = `<div class="plan-copy"><div class="plan-name">${expeditionId(id)}<span>${expedition.name}</span><small class="selected-badge">設定中</small></div><div class="plan-meta">${formatDuration(expedition.minutes)} × ${count}回</div></div><div class="stepper"><button type="button" data-minus="${teamIndex}:${id}" aria-label="${expedition.name}を1回減らす">−</button><strong>${count}</strong><button type="button" data-plus="${teamIndex}:${id}" aria-label="${expedition.name}を1回増やす" ${canAdd(teamIndex, id) ? "" : "disabled"}>＋</button></div>`;
+      row.innerHTML = `<div class="plan-copy"><div class="plan-name">${expeditionId(id)}<span>${expedition.name}</span></div><div class="plan-meta">${formatDuration(expedition.minutes)} × ${count}回</div></div><div class="stepper"><button type="button" data-minus="${teamIndex}:${id}" aria-label="${expedition.name}を1回減らす">−</button><strong>${count}</strong><button type="button" data-plus="${teamIndex}:${id}" aria-label="${expedition.name}を1回増やす" ${canAdd(teamIndex, id) ? "" : "disabled"}>＋</button></div>`;
       runs.append(row);
     });
     root.append(card);
@@ -263,7 +259,37 @@ function renderReference() {
 }
 
 function refresh() { renderTeams(); calculate(); }
-function toast(message) { const node = $("#toast"); node.textContent = message; node.classList.add("is-visible"); setTimeout(() => node.classList.remove("is-visible"), 2500); }
+function closeToast() {
+  clearTimeout(toastTimer);
+  toastTimer = null;
+  undoAction = null;
+  const node = $("#toast");
+  node.classList.remove("is-visible");
+  node.replaceChildren();
+}
+
+function toast(message, undo = null) {
+  clearTimeout(toastTimer);
+  undoAction = undo;
+  const node = $("#toast");
+  node.replaceChildren();
+  const text = document.createElement("span");
+  text.textContent = message;
+  node.append(text);
+  if (undo) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = "元に戻す";
+    button.addEventListener("click", () => {
+      const action = undoAction;
+      closeToast();
+      action?.();
+    });
+    node.append(button);
+  }
+  node.classList.add("is-visible");
+  toastTimer = setTimeout(closeToast, undo ? 6000 : 2500);
+}
 
 document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => {
   document.querySelectorAll("[data-view]").forEach((tab) => { tab.classList.toggle("is-active", tab === button); tab.setAttribute("aria-selected", String(tab === button)); });
@@ -276,17 +302,35 @@ $("#clearTargetBtn").addEventListener("click", () => { targetInputs.forEach((inp
 $("#dailyQuest").addEventListener("change", (event) => { state.dailyQuest = event.target.checked; calculate(); });
 $("#teamCount").addEventListener("change", (event) => {
   const next = Number(event.target.value);
-  if (next < state.teamCount) { for (let index = next; index < 5; index += 1) state.teams[index] = {}; toast("外れた入力枠の遠征プランを削除しました。"); }
+  const previousCount = state.teamCount;
+  const previousTeams = cloneTeams(state.teams);
+  if (next < state.teamCount) {
+    for (let index = next; index < 5; index += 1) state.teams[index] = {};
+  }
   state.teamCount = next; refresh();
+  if (next < previousCount && previousTeams.slice(next, previousCount).some((team) => Object.keys(team).length)) {
+    toast("外れた部隊の遠征を削除しました。", () => {
+      state.teamCount = previousCount;
+      state.teams = previousTeams;
+      renderTeamCount();
+      refresh();
+    });
+  }
 });
 [...stockInputs, ...targetInputs].forEach((input) => input.addEventListener("input", calculate));
 $("#teams").addEventListener("click", (event) => {
   const button = event.target.closest("button");
   if (!button) return;
   if (button.dataset.clearTeam !== undefined) {
-    state.teams[Number(button.dataset.clearTeam)] = {};
+    const teamIndex = Number(button.dataset.clearTeam);
+    const previousTeam = { ...state.teams[teamIndex] };
+    state.teams[teamIndex] = {};
     refresh();
-    toast("この部隊の遠征を削除しました。");
+    toast("この部隊の遠征を削除しました。", () => {
+      state.teams[teamIndex] = previousTeam;
+      normalizeLimits();
+      refresh();
+    });
     return;
   }
   if (button.dataset.add !== undefined) {
@@ -302,7 +346,16 @@ $("#teams").addEventListener("click", (event) => {
   }
   refresh();
 });
-$("#clearPlanBtn").addEventListener("click", () => { state.teams = emptyTeams(); refresh(); toast("遠征プランを消去しました。"); });
+$("#clearPlanBtn").addEventListener("click", () => {
+  const previousTeams = cloneTeams(state.teams);
+  state.teams = emptyTeams();
+  refresh();
+  toast("遠征プランを消去しました。", () => {
+    state.teams = previousTeams;
+    normalizeLimits();
+    refresh();
+  });
+});
 $("#referenceSearch").addEventListener("input", renderReference);
 $("#referenceFilters").addEventListener("click", (event) => {
   const button = event.target.closest("[data-filter]"); if (!button) return;

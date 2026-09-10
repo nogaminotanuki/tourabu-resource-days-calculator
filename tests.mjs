@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { calculateProjection, requiredDays, MAX_RESOURCE } from "./calculation-core.js";
+import { cloneTeams, createStoragePayload, expeditionClass, parseStoredPayload } from "./ui-core.js";
 
 assert.equal(requiredDays(200_000, 700_000, 30_000), 17);
 assert.equal(requiredDays(700_000, 700_000, 0), 0);
@@ -25,4 +26,24 @@ assert.equal(unreachable.successArrival, null);
 const capped = calculateProjection({ stock: [MAX_RESOURCE - 1, 0, 0, 0], targets: [MAX_RESOURCE, null, null, null], successGain: [50, 0, 0, 0], greatGain: [75, 0, 0, 0] });
 assert.equal(capped.successArrival[0], MAX_RESOURCE);
 
-console.log("計算テスト: 14項目すべて成功");
+const plans = [{ A1: 2 }, { B3: 1 }, { C4: 3 }, {}, {}];
+const snapshot = cloneTeams(plans);
+plans[0] = {};
+assert.deepEqual(plans[1], { B3: 1 });
+assert.deepEqual(snapshot[0], { A1: 2 });
+assert.notEqual(snapshot[1], plans[1]);
+
+assert.deepEqual(["A1", "B2", "C3", "D4", "E1"].map(expeditionClass), [
+  "expedition-a", "expedition-b", "expedition-c", "expedition-d", "expedition-e",
+]);
+assert.equal(expeditionClass("Z9"), "");
+
+const saved = createStoragePayload({
+  stock: ["0", "200000", "0", "0"], targets: ["", "700000", "", ""],
+  dailyQuest: true, teamCount: 3, teams: snapshot,
+});
+const restored = parseStoredPayload(JSON.stringify(saved), null);
+assert.deepEqual(restored, saved);
+assert.equal(parseStoredPayload("{broken", JSON.stringify(saved)).teamCount, 3);
+
+console.log("計算・UI状態テスト: 22項目すべて成功");
