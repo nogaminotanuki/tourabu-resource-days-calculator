@@ -534,6 +534,7 @@ tr:last-child td { border-bottom: 0; }
   .resource-entry-actions { align-items: stretch; flex-direction: column; }
   .resource-entry-actions .preset-note { text-align: left; }
   .button-row .button { flex: 1 1 auto; }
+  .resource-entry-actions .current-clear-button { flex-basis: 100%; }
   .plan-row { grid-template-columns: minmax(0, 1fr) auto; padding: 13px 10px 13px 13px; }
   .plan-name { font-size: 1rem; }
   .plan-meta { font-size: .875rem; }

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { calculateProjection, requiredDays, MAX_RESOURCE } from "./calculation-core.js";
-import { cloneTeams, createStoragePayload, expeditionClass, parseStoredPayload } from "./ui-core.js";
+import { clearStockValues, cloneTeams, createStoragePayload, expeditionClass, parseStoredPayload } from "./ui-core.js";
 
 assert.equal(requiredDays(200_000, 700_000, 30_000), 17);
 assert.equal(requiredDays(700_000, 700_000, 0), 0);
@@ -46,4 +46,8 @@ const restored = parseStoredPayload(JSON.stringify(saved), null);
 assert.deepEqual(restored, saved);
 assert.equal(parseStoredPayload("{broken", JSON.stringify(saved)).teamCount, 3);
 
-console.log("計算・UI状態テスト: 22項目すべて成功");
+const clearedStock = clearStockValues(["100", "200", "300", "400"]);
+assert.deepEqual(clearedStock.next, ["0", "0", "0", "0"]);
+assert.deepEqual(clearedStock.previous, ["100", "200", "300", "400"]);
+
+console.log("計算・UI状態テスト: 24項目すべて成功");

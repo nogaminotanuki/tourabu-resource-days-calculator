@@ -9,6 +9,13 @@ export function expeditionClass(id) {
   return /^[a-e]$/.test(group) ? `expedition-${group}` : "";
 }
 
+export function clearStockValues(stock) {
+  return {
+    previous: [...stock],
+    next: Array.from({ length: 4 }, () => "0"),
+  };
+}
+
 export function createStoragePayload({ stock, targets, dailyQuest, teamCount, teams }) {
   return {
     schemaVersion: STORAGE_SCHEMA_VERSION,

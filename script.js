@@ -1,5 +1,5 @@
 import { DAILY_REWARD, EXPEDITIONS, MAX_RESOURCE, RESOURCE_NAMES, calculateProjection, formatDuration } from "/calculation-core.js";
-import { cloneTeams, createStoragePayload, expeditionClass, parseStoredPayload } from "/ui-core.js";
+import { clearStockValues, cloneTeams, createStoragePayload, expeditionClass, parseStoredPayload } from "/ui-core.js";
 
 const STORAGE_KEY = "tourabuResourceDaysV1";
 const LEGACY_KEY = "tourabuResourceDaysPrototypeV3";
@@ -299,6 +299,15 @@ document.querySelectorAll("[data-view]").forEach((button) => button.addEventList
 
 $("#target700kBtn").addEventListener("click", () => { targetInputs.forEach((input) => { input.value = "700000"; }); calculate(); });
 $("#clearTargetBtn").addEventListener("click", () => { targetInputs.forEach((input) => { input.value = ""; }); calculate(); });
+$("#clearStockBtn").addEventListener("click", () => {
+  const { previous, next } = clearStockValues(stockInputs.map((input) => input.value));
+  stockInputs.forEach((input, index) => { input.value = next[index]; });
+  calculate();
+  toast("現在の資源を0にしました。", () => {
+    stockInputs.forEach((input, index) => { input.value = previous[index]; });
+    calculate();
+  });
+});
 $("#dailyQuest").addEventListener("change", (event) => { state.dailyQuest = event.target.checked; calculate(); });
 $("#teamCount").addEventListener("change", (event) => {
   const next = Number(event.target.value);
