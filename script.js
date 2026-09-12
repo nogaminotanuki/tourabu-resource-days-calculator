@@ -1,5 +1,5 @@
 import { DAILY_REWARD, EXPEDITIONS, MAX_RESOURCE, RESOURCE_NAMES, calculateProjection, formatDuration } from "/calculation-core.js";
-import { clearStockValues, cloneTeams, createStoragePayload, expeditionClass, parseStoredPayload } from "/ui-core.js";
+import { clearStockValues, cloneTeams, createArrivalComparison, createStoragePayload, expeditionClass, parseStoredPayload } from "/ui-core.js";
 
 const STORAGE_KEY = "tourabuResourceDaysV1";
 const LEGACY_KEY = "tourabuResourceDaysPrototypeV3";
@@ -198,10 +198,22 @@ function clearResults(message) {
   ["#fastDate", "#slowDate", "#resultBody", "#mobileResultCards", "#greatFinalResources", "#successFinalResources"].forEach((id) => { $(id).innerHTML = ""; });
   $("#greatArrivalLabel").textContent = "—";
   $("#successArrivalLabel").textContent = "—";
+  $("#greatArrivalDays").textContent = "—";
+  $("#successArrivalDays").textContent = "—";
+  $("#greatDurationText").textContent = "—";
+  $("#successDurationText").textContent = "—";
+  $("#greatDurationBar").style.width = "0";
+  $("#successDurationBar").style.width = "0";
+  $("#successArrivalBadge").textContent = "比較日数";
+  $("#arrivalCompareNote").textContent = "到達日数が異なる場合、長く貯める側の所持数が多くなることがあります。";
 }
 
-function renderFinalResources(selector, values) {
-  $(selector).innerHTML = values ? RESOURCE_NAMES.map((name, index) => `<div class="final-resource"><span>${name}</span><strong>${formatNumber.format(values[index])}</strong></div>`).join("") : '<p class="unreachable">算出不可</p>';
+function renderFinalResources(selector, values, targets) {
+  $(selector).innerHTML = values ? RESOURCE_NAMES.map((name, index) => {
+    const difference = targets[index] === null ? null : values[index] - targets[index];
+    const targetNote = difference === null ? "" : `<small>${difference === 0 ? "目標どおり" : `目標＋${formatNumber.format(difference)}`}</small>`;
+    return `<div class="final-resource"><span>${name}</span><span class="final-resource-value"><strong>${formatNumber.format(values[index])}</strong>${targetNote}</span></div>`;
+  }).join("") : '<p class="unreachable">算出不可</p>';
 }
 
 function calculate() {
@@ -235,10 +247,27 @@ function calculate() {
       return `<tr><th scope="row">${name}</th><td>${target === null ? "対象外" : formatNumber.format(target)}</td><td>${formatNumber.format(stock[index])}</td><td>${deficit === null ? "—" : formatNumber.format(deficit)}</td><td>${formatNumber.format(gains.success[index])}</td><td>${formatNumber.format(gains.great[index])}</td><td>${target === null ? "対象外" : daysLabel(result.successDays[index])}</td><td>${target === null ? "対象外" : daysLabel(result.greatDays[index])}</td></tr>`;
     }).join("");
     $("#mobileResultCards").innerHTML = RESOURCE_NAMES.map((name, index) => `<article class="mobile-resource-card"><h3>${name}</h3><dl><div><dt>目標</dt><dd>${targets[index] === null ? "対象外" : formatNumber.format(targets[index])}</dd></div><div><dt>現在</dt><dd>${formatNumber.format(stock[index])}</dd></div><div><dt>1日（成功）</dt><dd>${formatNumber.format(gains.success[index])}</dd></div><div><dt>1日（大成功）</dt><dd>${formatNumber.format(gains.great[index])}</dd></div><div><dt>日数（成功）</dt><dd>${targets[index] === null ? "対象外" : daysLabel(result.successDays[index])}</dd></div><div><dt>日数（大成功）</dt><dd>${targets[index] === null ? "対象外" : daysLabel(result.greatDays[index])}</dd></div></dl></article>`).join("");
-    $("#greatArrivalLabel").textContent = `${daysLabel(result.greatTotalDays)}後・${dateLabel(result.greatTotalDays)}`;
-    $("#successArrivalLabel").textContent = `${daysLabel(result.successTotalDays)}後・${dateLabel(result.successTotalDays)}`;
-    renderFinalResources("#greatFinalResources", result.greatArrival);
-    renderFinalResources("#successFinalResources", result.successArrival);
+    $("#greatArrivalLabel").textContent = dateLabel(result.greatTotalDays);
+    $("#successArrivalLabel").textContent = dateLabel(result.successTotalDays);
+    $("#greatArrivalDays").textContent = daysLabel(result.greatTotalDays);
+    $("#successArrivalDays").textContent = daysLabel(result.successTotalDays);
+    const comparison = createArrivalComparison(result.greatTotalDays, result.successTotalDays);
+    $("#greatDurationText").textContent = daysLabel(result.greatTotalDays);
+    $("#successDurationText").textContent = daysLabel(result.successTotalDays);
+    $("#greatDurationBar").style.width = `${comparison.greatWidth}%`;
+    $("#successDurationBar").style.width = `${comparison.successWidth}%`;
+    if (comparison.extraDays === null) {
+      $("#successArrivalBadge").textContent = "到達不可";
+      $("#arrivalCompareNote").textContent = "現在のプランでは到達できない資源があります。";
+    } else if (comparison.extraDays > 0) {
+      $("#successArrivalBadge").textContent = `＋${comparison.extraDays}日分`;
+      $("#arrivalCompareNote").textContent = `成功側は${comparison.extraDays}日長く貯めるため、到達時の所持数が多くなる場合があります。`;
+    } else {
+      $("#successArrivalBadge").textContent = "同じ日数";
+      $("#arrivalCompareNote").textContent = "同じ日数で比較しています。";
+    }
+    renderFinalResources("#greatFinalResources", result.greatArrival, targets);
+    renderFinalResources("#successFinalResources", result.successArrival, targets);
   }
   save();
 }

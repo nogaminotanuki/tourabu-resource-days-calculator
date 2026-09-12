@@ -16,6 +16,18 @@ export function clearStockValues(stock) {
   };
 }
 
+export function createArrivalComparison(greatDays, successDays) {
+  if (!Number.isFinite(greatDays) || !Number.isFinite(successDays)) {
+    return { greatWidth: 0, successWidth: 0, extraDays: null };
+  }
+  const longest = Math.max(greatDays, successDays, 1);
+  return {
+    greatWidth: greatDays / longest * 100,
+    successWidth: successDays / longest * 100,
+    extraDays: Math.max(0, successDays - greatDays),
+  };
+}
+
 export function createStoragePayload({ stock, targets, dailyQuest, teamCount, teams }) {
   return {
     schemaVersion: STORAGE_SCHEMA_VERSION,
