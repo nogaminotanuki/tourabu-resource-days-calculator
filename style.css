@@ -475,9 +475,39 @@ tr:last-child td { border-bottom: 0; }
 .filter { min-height: 44px; padding: 8px 12px; border: 1px solid #c8d2da; border-radius: 99px; background: white; color: var(--ink); font-size: .875rem; font-weight: 700; }
 .filter.is-active { border-color: var(--navy); background: var(--navy); color: white; }
 .reference-count { margin: 0 0 8px; color: var(--muted); font-size: .8rem; }
-.reference-table { min-width: 1000px; }
+.reference-table {
+  --reference-id-width: 72px;
+  min-width: 1000px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
 .reference-table th, .reference-table td { text-align: center; }
 .reference-table th:nth-child(2), .reference-table td:nth-child(2) { text-align: left; }
+.reference-table :is(th, td):nth-child(1),
+.reference-table :is(th, td):nth-child(2) {
+  position: sticky;
+  z-index: 2;
+  background: white;
+}
+.reference-table thead :is(th, td):nth-child(1),
+.reference-table thead :is(th, td):nth-child(2) {
+  z-index: 3;
+  background: #f2f5f7;
+}
+.reference-table :is(th, td):nth-child(1) {
+  left: 0;
+  width: var(--reference-id-width);
+  min-width: var(--reference-id-width);
+  max-width: var(--reference-id-width);
+}
+.reference-table :is(th, td):nth-child(2) {
+  left: var(--reference-id-width);
+  width: 180px;
+  min-width: 180px;
+  max-width: 180px;
+  white-space: normal;
+  box-shadow: 9px 0 12px -12px rgba(24, 41, 54, .9);
+}
 .reward-badge { display: inline-block; min-width: 34px; padding: 2px 7px; border-radius: 99px; background: var(--gold-soft); color: #694e1d; font-weight: 700; }
 .no-reward { color: #a0a9b0; }
 .reference-notes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 12px; }
@@ -570,6 +600,8 @@ tr:last-child td { border-bottom: 0; }
   .duration-compare { padding-inline: 11px; }
   .duration-row { grid-template-columns: 52px minmax(0, 1fr) 50px; gap: 7px; }
   .final-resource-list { grid-template-columns: 1fr; }
+  .reference-table { --reference-id-width: 58px; }
+  .reference-table :is(th, td):nth-child(2) { width: 132px; min-width: 132px; max-width: 132px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
