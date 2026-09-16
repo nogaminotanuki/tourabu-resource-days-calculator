@@ -1,4 +1,4 @@
-import { EXPEDITIONS, MAX_RESOURCE, RESOURCE_NAMES, calculateDailyGains, calculateProjection, formatDuration } from "/calculation-core.js";
+import { EXPEDITIONS, MAX_RESOURCE, RESOURCE_NAMES, calculateDailyGains, calculateKobanEarned, calculateProjection, formatDuration } from "/calculation-core.js";
 import { clearStockValues, cloneTeams, createArrivalComparison, createStoragePayload, expeditionClass, parseStoredPayload } from "/ui-core.js";
 
 const STORAGE_KEY = "tourabuResourceDaysV1";
@@ -201,12 +201,18 @@ function clearResults(message) {
   $("#arrivalCompareNote").textContent = "到達日数が異なる場合、長く貯める側の所持数が多くなることがあります。";
 }
 
-function renderFinalResources(selector, values, targets) {
-  $(selector).innerHTML = values ? RESOURCE_NAMES.map((name, index) => {
+function renderFinalResources(selector, values, targets, kobanEarned) {
+  if (!values) {
+    $(selector).innerHTML = '<p class="unreachable">算出不可</p>';
+    return;
+  }
+  const resources = RESOURCE_NAMES.map((name, index) => {
     const difference = targets[index] === null ? null : values[index] - targets[index];
     const targetNote = difference === null ? "" : `<small>${difference === 0 ? "目標どおり" : `目標＋${formatNumber.format(difference)}`}</small>`;
     return `<div class="final-resource"><span>${name}</span><span class="final-resource-value"><strong>${formatNumber.format(values[index])}</strong>${targetNote}</span></div>`;
-  }).join("") : '<p class="unreachable">算出不可</p>';
+  }).join("");
+  const koban = `<div class="final-resource final-resource-koban"><span>獲得小判</span><span class="final-resource-value"><strong>${formatNumber.format(kobanEarned)}</strong><small>到達までの累計</small></span></div>`;
+  $(selector).innerHTML = resources + koban;
 }
 
 function calculate() {
@@ -259,8 +265,8 @@ function calculate() {
       $("#successArrivalBadge").textContent = "同じ日数";
       $("#arrivalCompareNote").textContent = "同じ日数で比較しています。";
     }
-    renderFinalResources("#greatFinalResources", result.greatArrival, targets);
-    renderFinalResources("#successFinalResources", result.successArrival, targets);
+    renderFinalResources("#greatFinalResources", result.greatArrival, targets, calculateKobanEarned(gains.koban.great, result.greatTotalDays));
+    renderFinalResources("#successFinalResources", result.successArrival, targets, calculateKobanEarned(gains.koban.success, result.successTotalDays));
   }
   save();
 }

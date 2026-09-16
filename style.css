@@ -462,6 +462,8 @@ tr:last-child td { border-bottom: 0; }
 .final-resource-value { min-width: 0; text-align: right; }
 .final-resource strong, .final-resource small { display: block; font-variant-numeric: tabular-nums; }
 .final-resource small { margin-top: 1px; color: var(--muted); font-size: .75rem; white-space: nowrap; }
+.final-resource-koban { grid-column: 1 / -1; background: var(--gold-soft); }
+.final-resource-koban > span:first-child { color: #73551f; font-weight: 750; }
 .notice-panel {
   padding: 0 18px 14px;
   border: 1px solid #d6c495;

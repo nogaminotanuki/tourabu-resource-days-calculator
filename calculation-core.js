@@ -42,6 +42,10 @@ export function calculateDailyGains(entries, dailyQuest) {
   return { success, great, koban: { success: kobanBase, great: greatKoban } };
 }
 
+export function calculateKobanEarned(dailyKoban, days) {
+  return Number.isFinite(days) ? dailyKoban * days : null;
+}
+
 export function requiredDays(stock, target, dailyGain) {
   if (target === null) return null;
   const deficit = Math.max(0, target - stock);
