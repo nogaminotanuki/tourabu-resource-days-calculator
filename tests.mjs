@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { calculateProjection, requiredDays, MAX_RESOURCE } from "./calculation-core.js";
+import { EXPEDITIONS, MAX_RESOURCE, calculateDailyGains, calculateProjection, requiredDays } from "./calculation-core.js";
 import { clearStockValues, cloneTeams, createArrivalComparison, createStoragePayload, expeditionClass, parseStoredPayload } from "./ui-core.js";
 
 assert.equal(requiredDays(200_000, 700_000, 30_000), 17);
@@ -56,4 +56,10 @@ assert.equal(arrivalComparison.successWidth, 100);
 assert.ok(arrivalComparison.greatWidth < arrivalComparison.successWidth);
 assert.equal(createArrivalComparison(Infinity, Infinity).extraDays, null);
 
-console.log("計算・UI状態テスト: 28項目すべて成功");
+const d2 = EXPEDITIONS.find((item) => item.id === "D2");
+const dailyWithKoban = calculateDailyGains([{ expedition: d2, count: 2 }], true);
+assert.equal(dailyWithKoban.koban.success, 1_200);
+assert.equal(dailyWithKoban.koban.great, 2_000);
+assert.equal(calculateDailyGains([{ expedition: d2, count: 2 }], false).koban.great, 800);
+
+console.log("計算・UI状態テスト: 31項目すべて成功");

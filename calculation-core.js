@@ -1,6 +1,7 @@
 export const RESOURCE_NAMES = ["木炭", "玉鋼", "冷却材", "砥石"];
 export const MAX_RESOURCE = 9_999_999;
 export const DAILY_REWARD = 2_800;
+export const DAILY_KOBAN_REWARD = 1_200;
 
 export const EXPEDITIONS = [
   { id: "A1", name: "鳥羽・伏見の戦い", minutes: 10, success: [10, 15, 0, 0], great: [15, 22, 0, 0], koban: 0, request: 0, help: 0 },
@@ -24,6 +25,22 @@ export const EXPEDITIONS = [
   { id: "E3", name: "流鏑馬揃え", minutes: 900, success: [350, 200, 100, 250], great: [525, 300, 150, 375], koban: 700, request: 0, help: 0 },
   { id: "E4", name: "奥州合戦", minutes: 1200, success: [300, 400, 500, 0], great: [450, 600, 750, 0], koban: 700, request: 3, help: 0 },
 ];
+
+export function calculateDailyGains(entries, dailyQuest) {
+  const resourceBase = dailyQuest ? DAILY_REWARD : 0;
+  const kobanBase = dailyQuest ? DAILY_KOBAN_REWARD : 0;
+  const success = Array(4).fill(resourceBase);
+  const great = Array(4).fill(resourceBase);
+  let greatKoban = kobanBase;
+  entries.forEach(({ expedition, count }) => {
+    for (let index = 0; index < 4; index += 1) {
+      success[index] += expedition.success[index] * count;
+      great[index] += expedition.great[index] * count;
+    }
+    greatKoban += expedition.koban * count;
+  });
+  return { success, great, koban: { success: kobanBase, great: greatKoban } };
+}
 
 export function requiredDays(stock, target, dailyGain) {
   if (target === null) return null;

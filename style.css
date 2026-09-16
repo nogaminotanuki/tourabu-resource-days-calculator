@@ -356,7 +356,7 @@ a { color: var(--blue); text-underline-offset: 3px; }
 .team-clear { flex: 0 0 44px; width: 44px; height: 44px; border: 1px solid #d7c4c4; border-radius: 9px; background: #fff; color: #8d4c4c; font-size: 1.35rem; font-weight: 750; line-height: 1; }
 .team-clear:hover:not(:disabled) { border-color: #c98686; background: #fbecec; color: var(--red); }
 .team-clear:disabled { border-color: #dfe5e9; background: #f4f6f7; color: #adb7be; cursor: not-allowed; }
-.daily-summary { display: grid; grid-template-columns: 1.15fr repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+.daily-summary { display: grid; grid-template-columns: 1.15fr repeat(5, 1fr); gap: 8px; margin-top: 14px; }
 .daily-summary-title { display: grid; align-content: center; padding: 9px 10px; color: var(--muted); font-size: .875rem; }
 .daily-summary-title strong { color: var(--ink); font-size: .95rem; }
 .summary-item { padding: 11px 8px; border-radius: 11px; background: var(--soft); text-align: center; }
@@ -364,6 +364,9 @@ a { color: var(--blue); text-underline-offset: 3px; }
 .summary-item span { color: var(--muted); font-size: .875rem; }
 .summary-item strong { margin-top: 2px; font-size: .95rem; font-variant-numeric: tabular-nums; }
 .summary-item i { color: #9aa5ad; font-style: normal; font-weight: 500; }
+.summary-item-koban { background: var(--gold-soft); }
+.summary-item-koban span { color: #73551f; }
+.daily-summary-note { margin: 6px 2px 0; color: var(--muted); font-size: .8125rem; text-align: right; }
 .plan-actions { justify-content: flex-end; }
 .compact-details,
 .result-details { margin-top: 12px; border-top: 1px solid var(--line); }

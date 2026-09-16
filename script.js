@@ -1,4 +1,4 @@
-import { DAILY_REWARD, EXPEDITIONS, MAX_RESOURCE, RESOURCE_NAMES, calculateProjection, formatDuration } from "/calculation-core.js";
+import { EXPEDITIONS, MAX_RESOURCE, RESOURCE_NAMES, calculateDailyGains, calculateProjection, formatDuration } from "/calculation-core.js";
 import { clearStockValues, cloneTeams, createArrivalComparison, createStoragePayload, expeditionClass, parseStoredPayload } from "/ui-core.js";
 
 const STORAGE_KEY = "tourabuResourceDaysV1";
@@ -159,20 +159,13 @@ function renderTeams() {
 }
 
 function dailyGains() {
-  const base = state.dailyQuest ? DAILY_REWARD : 0;
-  const success = Array(4).fill(base);
-  const great = Array(4).fill(base);
-  activeEntries().forEach(({ expedition, count }) => {
-    for (let index = 0; index < 4; index += 1) {
-      success[index] += expedition.success[index] * count;
-      great[index] += expedition.great[index] * count;
-    }
-  });
-  return { success, great };
+  return calculateDailyGains(activeEntries(), state.dailyQuest);
 }
 
 function renderDaily(gains) {
-  $("#dailySummary").innerHTML = `<div class="daily-summary-title"><strong>1日の獲得</strong><span>成功 / 大成功</span></div>${RESOURCE_NAMES.map((name, index) => `<div class="summary-item"><span>${name}</span><strong>${formatNumber.format(gains.success[index])} <i>/</i> ${formatNumber.format(gains.great[index])}</strong></div>`).join("")}`;
+  const resources = RESOURCE_NAMES.map((name, index) => `<div class="summary-item"><span>${name}</span><strong>${formatNumber.format(gains.success[index])} <i>/</i> ${formatNumber.format(gains.great[index])}</strong></div>`).join("");
+  const koban = `<div class="summary-item summary-item-koban"><span>小判</span><strong>${formatNumber.format(gains.koban.success)} <i>/</i> ${formatNumber.format(gains.koban.great)}</strong></div>`;
+  $("#dailySummary").innerHTML = `<div class="daily-summary-title"><strong>1日の獲得</strong><span>成功 / 大成功</span></div>${resources}${koban}`;
 }
 
 function daysLabel(days) { return days === Infinity ? "到達不可" : `${days}日`; }

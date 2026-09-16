@@ -56,7 +56,7 @@
           <label class="switch-row">
             <input id="dailyQuest" type="checkbox" checked>
             <span class="switch" aria-hidden="true"></span>
-            <span><strong>日課をすべて達成する</strong><small>1日につき各資源 +2,800</small></span>
+            <span><strong>日課をすべて達成する</strong><small>各資源 +2,800・小判 +1,200</small></span>
           </label>
           <p class="inline-alert" id="dailyPlanAlert" hidden>日課全達成には遠征1回以上が必要です。下の遠征プランを設定してください。</p>
         </section>
@@ -70,7 +70,8 @@
             <label class="team-count-field"><span>使用する部隊数</span><select id="teamCount"></select></label>
           </div>
           <div id="teams" class="teams"></div>
-          <div class="daily-summary" id="dailySummary" aria-label="1日の獲得資源"></div>
+          <div class="daily-summary" id="dailySummary" aria-label="1日の獲得資源と小判"></div>
+          <p class="daily-summary-note">遠征の小判は大成功時のみ獲得できます。</p>
           <div class="button-row plan-actions">
             <button class="button button-danger" id="clearPlanBtn" type="button">遠征プランを消去</button>
           </div>
@@ -204,7 +205,7 @@
     </main>
 
     <footer class="site-footer">
-      <p><strong>Version 1.4.1</strong>　データ確認日：2026-09-08</p>
+      <p><strong>Version 1.5</strong>　データ確認日：2026-09-08</p>
       <p>公式情報：<a href="https://www.toukenranbu.jp/game-topics/2763/" target="_blank" rel="noreferrer">資源所持上限の変更</a>、<a href="https://www.toukenranbu.jp/game-topics/2603/" target="_blank" rel="noreferrer">日課任務の改修</a></p>
       <p>本ツールはゲーム内仕様に基づく非公式資料です。最新情報は公式サイトおよびゲーム内「指南」をご確認ください。</p>
       <p>本ツールは非公式ファンツールです。『刀剣乱舞ONLINE』公式運営および関係各社とは関係ありません。</p>
